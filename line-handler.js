@@ -1,4 +1,5 @@
 const line = require('@line/bot-sdk');
+const { classifyMessage } = require('./filter-intent');
 const { getAllDriveTexts } = require('./get-doc-content');
 const { askWithContext, summarizeData } = require('./qa-with-context');
 
@@ -31,6 +32,30 @@ async function handleMessage(event) {
 
     const userMessage = event.message.text;
     const replyToken = event.replyToken;
+    const type = classifyMessage(userMessage);
+    if (type === 'greeting') {
+    const greetingMessage = {
+        type: 'text',
+        text: 'สวัสดีครับ! ยินดีต้อนรับสู่ผู้ช่วยข้อมูลจังหวัดอุตรดิตถ์ 😊\nพิมพ์คำถามเช่น “ประชากรเขต 2” หรือ “นโยบายด้านการศึกษา” ได้เลยครับ',
+    };
+    return await client.replyMessage(replyToken, greetingMessage);
+}
+
+if (type === 'help') {
+    const helpMessage = {
+        type: 'text',
+        text: 'คุณสามารถถามข้อมูลต่างๆ เช่น:\n• จำนวนประชากร\n• ผลการเลือกตั้ง\n• นโยบายของพรรค\nพิมพ์คำถามมาได้เลยครับ 😊',
+    };
+    return await client.replyMessage(replyToken, helpMessage);
+}
+
+if (type !== 'question') {
+    const unknownMessage = {
+        type: 'text',
+        text: 'โปรดพิมพ์คำถามที่ต้องการทราบ เช่น “จำนวนประชากรเขต 3” หรือ “นโยบายด้านเกษตร” 🙏',
+    };
+    return await client.replyMessage(replyToken, unknownMessage);
+}
     
     console.log('👤 User message:', userMessage);
     console.log('🔑 Reply token:', replyToken);
